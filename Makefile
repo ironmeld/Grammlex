@@ -31,15 +31,20 @@ BUILDDIR ?= $(CURDIR)/BUILD
 
 default: $(BUILDDIR)/grammlex.jar
 clean:
-	rm -rf $(BUILDDIR)
+	rm -rf $(BUILDDIR) $(DEBUG_CLASSES)
 
-# This is the list of source directories
+# This is the list of source directories, space separated
 SOURCE_DIRS := src/org/grammlex/v1
 
 # Find every java source file in the list of source dirs
 SOURCES := $(foreach dir,$(SOURCE_DIRS),$(wildcard $(dir)/*.java))
+
 # This explains how the .java extenstion is mapped to .class:
 # https://www.gnu.org/software/make/manual/make.html#Substitution-Refs
+DEBUG_CLASSES := $(SOURCES:.java=.class)
+# These classes are used by intelliJ, but pollute your source tree.
+debug: $(DEBUG_CLASSES)
+
 CLASSES := $(subst src/,$(BUILDDIR)/,$(SOURCES:.java=.class))
 JAVAC := javac
 JAR := jar
@@ -60,13 +65,19 @@ $(BUILDDIR):
 # The first parameter $(1) is the source directory.
 # Note that functions $() and variables $< have an extra $ because
 # it needs to be escaped in a function.
+# The first rule is for the build directory.
+# The second rule is for the DEBUG_CLASSES in the src directory.
 define define_compile_rules
 $(subst src/,$(BUILDDIR)/,$(1))/%.class: $(1)/%.java
 	(cd src;$(JAVAC) -d $(BUILDDIR) $$(subst src/,,$$<))
+
+$(1)/%.class: $(1)/%.java
+	(cd src;$(JAVAC) $$(subst src/,,$$<))
 endef
+
 # Here we call the function above for every source directory
 $(foreach src_dir, $(SOURCE_DIRS), $(eval $(call define_compile_rules,$(src_dir))))
 
 # phony means that make will just run this target's commands, regardless of
 # whether a file happens to exist with the same name
-.PHONY: clean
+.PHONY: clean debug
