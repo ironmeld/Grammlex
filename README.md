@@ -1,13 +1,14 @@
 # Grammlex
-An LR(1) Parsing Tool with an MIT license.
+An LR(1) Parsing Tool written in Java with an MIT license.
 
 ## Status
 Grammlex is in development and is not ready for use. 
 
 ## Features
-* Reading a grammar in a subset of the ANTLR4 format.
-* Convert terms with modifiers, * + and ?, to lower level terms without them
-* Print grammar details
+* Reads a grammar in a subset of the ANTLR4 format.
+* Converts terms with modifiers, * + and ?, to lower level terms without them
+* Computes the FIRST set of all (left side) variables
+* Prints grammar details
 
 ## Install and Build
 First, make sure you have the java compiler (javac) installed.
@@ -66,6 +67,16 @@ STRING
 ID
 TRAILER
 NL
+
+First Sets:
+BOM_opt: [epsilon, BOM]
+value_repeat1: [ID]
+S: [epsilon, ID]
+S': [epsilon, ID]
+document: [ID]
+value: [ID]
+map: [ID]
+document_repeat: [epsilon, ID]
 ```
 ### Acknowledgments
 A significant portion of the LR(1) code is derived from

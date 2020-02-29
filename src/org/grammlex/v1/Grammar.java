@@ -1,8 +1,6 @@
 package org.grammlex.v1;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /* Grammar
  *
@@ -31,12 +29,13 @@ public class Grammar {
 
     private final List<Rule> extendedRules; // rules before modifiers are expanded
     private final List<Rule> rules; // low level rules suitable for LR(1)
-    private final HashSet<String> terminals; // terms only on the right
-    private final HashSet<String> variables; // terms on the left
-    private final HashSet<String> repeats; // terms with *
-    private final HashSet<String> repeat1s; // terms with +
-    private final HashSet<String> optionals; // terms with ?
+    private final Set<String> terminals; // terms only on the right
+    private final Set<String> variables; // terms on the left
+    private final Set<String> repeats; // terms with *
+    private final Set<String> repeat1s; // terms with +
+    private final Set<String> optionals; // terms with ?
     private String startVariable;
+    private Map<String, Set<String>> firstSets;
 
     public Grammar(String grammarText) {
         extendedRules = new ArrayList<>();
@@ -47,6 +46,7 @@ public class Grammar {
         repeat1s = new HashSet<>();
         optionals = new HashSet<>();
         parseRules(grammarText);
+        computeFirstSets();
     }
 
     protected void parseRules(String grammarText) {
@@ -167,6 +167,81 @@ public class Grammar {
 
     }
 
+    /* Compute the FIRST set for each variable.
+     * https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL(1)_parsing_table
+     */
+    private void computeFirstSets() {
+        firstSets = new HashMap<>();
+        for (String s : variables) {
+            Set<String> temp = new HashSet<>();
+            firstSets.put(s, temp);
+        }
+
+        /* computing the first set of a variable requires the first
+         * set of other variables, which is chicken or egg first?,
+         * so we start just computing with empty first sets and
+         * progressively fill in those sets and loop until we
+         * can no longer add any more elements.
+         */
+        boolean isChanged = true;
+        while (isChanged) {
+            isChanged = false;
+            for (String variable : variables) {
+                Set<String> firstSet = new HashSet<>();
+                // for every rule A -> terms*, add first(terms*)
+                for (Rule rule : rules) {
+                    if (rule.getRuleVar().equals(variable)) {
+                        firstSet.addAll(computeFirst(rule.getRuleTerms(), 0));
+                    }
+                }
+                // as long as a first set expanded, keep looping
+                if (!firstSets.get(variable).containsAll(firstSet)) {
+                    isChanged = true;
+                    firstSets.get(variable).addAll(firstSet);
+                }
+            }
+        }
+        firstSets.put("S'", firstSets.get(startVariable));
+    }
+
+    /* Compute the first set for a list of terms starting at index.
+     * Note that this implementation includes epsilon in the first
+     * set as an indication that the sequence is nullable - it can all
+     * reduce to an empty string. However, in this case the first set
+     * does not consist only of terminals which can be confusing because
+     * epsilon is not actually processed as an input when parsing.
+     * In other words, epsilon is not a terminal.
+     * Some implementations exclude epsilon from the first set and
+     * separately indicate whether the term or terms are nullable.
+     */
+    public Set<String> computeFirst(String[] terms, int index) {
+        Set<String> first = new HashSet<>();
+        if (index == terms.length) {
+            return first;
+        }
+
+        // if the first term is a terminal or epsilon that is the first set.
+        // Stop here. Nothing after epsilon and Anything after that terminal is not first.
+        if (terminals.contains(terms[index]) || terms[index].equals(Grammar.EPSILON)) {
+            first.add(terms[index]);
+            return first;
+        }
+
+        // if the first term is a variable, add its first set and proceed
+        if (variables.contains(terms[index])) {
+            first.addAll(firstSets.get(terms[index]));
+        }
+
+        // if the variable was nullable (reduces to epsilon) and there
+        // are more terms, then compute first for remaining terms.
+        // Otherwise return with what we got from the variable.
+        if (first.contains(Grammar.EPSILON) && (index != terms.length - 1)) {
+            first.remove(Grammar.EPSILON);
+            first.addAll(computeFirst(terms, index + 1));
+        }
+        return first;
+    }
+
     public String dumpGrammar() {
         return "Extended Rules:\n" +
                 dumpExtendedRules() +
@@ -178,7 +253,9 @@ public class Grammar {
                 "\nVariables:\n" +
                 dumpVariables() +
                 "\nTerminals:\n" +
-                dumpTerminals();
+                dumpTerminals() +
+                "\nFirst Sets:\n" +
+                dumpFirstSets();
     }
 
     public String dumpExtendedRules() {
@@ -211,6 +288,13 @@ public class Grammar {
         for (String terminal : terminals) {
             dump.append(terminal).append("\n");
         }
+        return dump.toString();
+    }
+
+    public String dumpFirstSets() {
+        StringBuilder dump = new StringBuilder();
+        firstSets.forEach((variable, firstSet)
+            -> dump.append(variable).append(": ").append(firstSet).append("\n"));
         return dump.toString();
     }
 

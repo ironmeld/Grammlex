@@ -24,4 +24,12 @@ public class Rule {
         ruleStr.append(";");
         return ruleStr.toString();
     }
+
+    public String getRuleVar() {
+        return ruleVar;
+    }
+
+    public String[] getRuleTerms() {
+        return ruleTerms;
+    }
 }
