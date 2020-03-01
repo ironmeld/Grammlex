@@ -8,6 +8,7 @@ Grammlex is in development and is not ready for use.
 * Reads a grammar in a subset of the ANTLR4 format.
 * Converts terms with modifiers, * + and ?, to lower level terms without them
 * Computes the FIRST set of all (left side) variables
+* Computes the FOLLOW set of all (left side) variables
 * Prints grammar details
 * "Modern" code, free of warnings (IntelliJ + SonarLint circa 2020)
 * Code has comments
@@ -31,7 +32,7 @@ map: ID COLON STRING NL;
 ```
 Run the program:
 ```
-$ java -jar BUILD/grammlex.jar examples/mfield.g4 
+$ java -jar BUILD/grammlex.jar examples/mfield.g4
 Extended Rules:
 S: document*;
 document: BOM? HEADER value+ TRAILER;
@@ -80,6 +81,16 @@ document: [BOM, HEADER]
 value: [ID]
 map: [ID]
 document_repeat: [epsilon, BOM, HEADER]
+
+Follow Sets:
+BOM_opt: [HEADER]
+value_repeat1: [TRAILER]
+S: [$]
+S': [$]
+document: [BOM, $, HEADER]
+value: [ID, TRAILER]
+map: [ID, TRAILER]
+document_repeat: [$]
 ```
 ### Acknowledgments
 A significant portion of the LR(1) code is derived from

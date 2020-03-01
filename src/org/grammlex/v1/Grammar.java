@@ -36,6 +36,7 @@ public class Grammar {
     private final Set<String> optionals; // terms with ?
     private String startVariable;
     private Map<String, Set<String>> firstSets;
+    private Map<String, Set<String>> followSets;
 
     public Grammar(String grammarText) {
         extendedRules = new ArrayList<>();
@@ -47,6 +48,7 @@ public class Grammar {
         optionals = new HashSet<>();
         parseRules(grammarText);
         computeFirstSets();
+        computeFollowSets();
     }
 
     protected void parseRules(String grammarText) {
@@ -171,7 +173,7 @@ public class Grammar {
     /* Compute the FIRST set for each variable.
      * https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL(1)_parsing_table
      */
-    private void computeFirstSets() {
+    protected void computeFirstSets() {
         firstSets = new HashMap<>();
         for (String s : variables) {
             Set<String> temp = new HashSet<>();
@@ -184,9 +186,9 @@ public class Grammar {
          * progressively fill in those sets and loop until we
          * can no longer add any more elements.
          */
-        boolean isChanged = true;
-        while (isChanged) {
-            isChanged = false;
+        boolean changed = true;
+        while (changed) {
+            changed = false;
             for (String variable : variables) {
                 Set<String> firstSet = new HashSet<>();
                 // for every rule A -> terms*, add first(terms*)
@@ -197,7 +199,7 @@ public class Grammar {
                 }
                 // as long as a first set expanded, keep looping
                 if (!firstSets.get(variable).containsAll(firstSet)) {
-                    isChanged = true;
+                    changed = true;
                     firstSets.get(variable).addAll(firstSet);
                 }
             }
@@ -215,7 +217,7 @@ public class Grammar {
      * Some implementations exclude epsilon from the first set and
      * separately indicate whether the term or terms are nullable.
      */
-    public Set<String> computeFirst(String[] terms, int index) {
+    protected Set<String> computeFirst(String[] terms, int index) {
         Set<String> first = new HashSet<>();
 
         // if the first term is a terminal or epsilon that is the first set.
@@ -240,6 +242,70 @@ public class Grammar {
         return first;
     }
 
+    /* Compute the FOLLOW set for each variable.
+     * https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL(1)_parsing_table
+     */
+    protected void computeFollowSets() {
+        followSets = new HashMap<>();
+        for (String s : variables) {
+            Set<String> temp = new HashSet<>();
+            followSets.put(s, temp);
+        }
+        Set<String> start = new HashSet<>();
+        start.add("$");
+        followSets.put("S'", start);
+
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (String variable : variables) {
+                // Go through every rule looking for this variable.
+                // If the rule contains the variable, use the rule to figure
+                // out what terminals can follow the variable.
+                for (Rule rule : rules) {
+                    if (computeFollowSet(variable, rule)) {
+                        changed = true;
+                    }
+                }
+            }
+        }
+    }
+
+    protected boolean computeFollowSet(String variable, Rule rule) {
+        boolean changed = false;
+        for (int i = 0; i < rule.getRuleTerms().length; i++) {
+            if (rule.getRuleTerms()[i].equals(variable)) {
+                Set<String> addToFollow;
+                if (i == rule.getRuleTerms().length - 1) {
+                    // A -> uB
+                    // The variable we care about (B) is at the end of this rule
+                    // so we can presume that whatever follows A can follow B.
+                    // So add follow(A) to follow(B)
+                    // (We are using the variable first for that purpose)
+                    addToFollow = followSets.get(rule.getRuleVar());
+                } else {
+                    // A -> uBv
+                    // there is something after B in this rule so
+                    // include first(v) in the follow set of B.
+                    addToFollow = computeFirst(rule.getRuleTerms(), i + 1);
+                    // Moreover, if the remaining terms of the rule (v) can
+                    // reduce to empty string (epsilon) then whatever can
+                    // follow A can follow B, so add follow(A) to follow(B)
+                    // as well.
+                    if (addToFollow.contains(Grammar.EPSILON)) {
+                        addToFollow.remove(Grammar.EPSILON);
+                        addToFollow.addAll(followSets.get(rule.getRuleVar()));
+                    }
+                }
+                if (!followSets.get(variable).containsAll(addToFollow)) {
+                    changed = true;
+                    followSets.get(variable).addAll(addToFollow);
+                }
+            }
+        }
+        return changed;
+    }
+
     public String dumpGrammar() {
         return "Extended Rules:\n" +
                 dumpExtendedRules() +
@@ -253,7 +319,9 @@ public class Grammar {
                 "\nTerminals:\n" +
                 dumpTerminals() +
                 "\nFirst Sets:\n" +
-                dumpFirstSets();
+                dumpFirstSets() +
+                "\nFollow Sets:\n" +
+                dumpFollowSets();
     }
 
     public String dumpExtendedRules() {
@@ -292,7 +360,14 @@ public class Grammar {
     public String dumpFirstSets() {
         StringBuilder dump = new StringBuilder();
         firstSets.forEach((variable, firstSet)
-            -> dump.append(variable).append(": ").append(firstSet).append("\n"));
+                -> dump.append(variable).append(": ").append(firstSet).append("\n"));
+        return dump.toString();
+    }
+
+    public String dumpFollowSets() {
+        StringBuilder dump = new StringBuilder();
+        followSets.forEach((variable, followSet)
+                -> dump.append(variable).append(": ").append(followSet).append("\n"));
         return dump.toString();
     }
 
