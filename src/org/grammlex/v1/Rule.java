@@ -1,20 +1,20 @@
 package org.grammlex.v1;
 
 public class Rule {
-    private final String ruleVar;
-    private final String[] ruleTerms;
+    private final String variable;
+    private final String[] terms;
 
-    public Rule(String ruleVar, String[] ruleTerms) {
-        this.ruleVar = ruleVar;
-        this.ruleTerms = ruleTerms;
+    public Rule(String variable, String[] terms) {
+        this.variable = variable;
+        this.terms = terms;
     }
 
     @Override
     public String toString() {
-        StringBuilder ruleStr = new StringBuilder(ruleVar);
+        StringBuilder ruleStr = new StringBuilder(variable);
         ruleStr.append(": ");
         boolean first = true;
-        for (String term : ruleTerms) {
+        for (String term : terms) {
             if (!first) {
                 ruleStr.append(" ");
             }
@@ -25,11 +25,11 @@ public class Rule {
         return ruleStr.toString();
     }
 
-    public String getRuleVar() {
-        return ruleVar;
+    public String getVar() {
+        return variable;
     }
 
-    public String[] getRuleTerms() {
-        return ruleTerms;
+    public String[] getTerms() {
+        return terms;
     }
 }

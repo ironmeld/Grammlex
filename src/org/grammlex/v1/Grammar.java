@@ -193,8 +193,8 @@ public class Grammar {
                 Set<String> firstSet = new HashSet<>();
                 // for every rule A -> terms*, add first(terms*)
                 for (Rule rule : rules) {
-                    if (rule.getRuleVar().equals(variable)) {
-                        firstSet.addAll(computeFirst(rule.getRuleTerms(), 0));
+                    if (rule.getVar().equals(variable)) {
+                        firstSet.addAll(computeFirst(rule.getTerms(), 0));
                     }
                 }
                 // as long as a first set expanded, keep looping
@@ -273,28 +273,28 @@ public class Grammar {
 
     protected boolean computeFollowSet(String variable, Rule rule) {
         boolean changed = false;
-        for (int i = 0; i < rule.getRuleTerms().length; i++) {
-            if (rule.getRuleTerms()[i].equals(variable)) {
+        for (int i = 0; i < rule.getTerms().length; i++) {
+            if (rule.getTerms()[i].equals(variable)) {
                 Set<String> addToFollow;
-                if (i == rule.getRuleTerms().length - 1) {
+                if (i == rule.getTerms().length - 1) {
                     // A -> uB
                     // The variable we care about (B) is at the end of this rule
                     // so we can presume that whatever follows A can follow B.
                     // So add follow(A) to follow(B)
                     // (We are using the variable first for that purpose)
-                    addToFollow = followSets.get(rule.getRuleVar());
+                    addToFollow = followSets.get(rule.getVar());
                 } else {
                     // A -> uBv
                     // there is something after B in this rule so
                     // include first(v) in the follow set of B.
-                    addToFollow = computeFirst(rule.getRuleTerms(), i + 1);
+                    addToFollow = computeFirst(rule.getTerms(), i + 1);
                     // Moreover, if the remaining terms of the rule (v) can
                     // reduce to empty string (epsilon) then whatever can
                     // follow A can follow B, so add follow(A) to follow(B)
                     // as well.
                     if (addToFollow.contains(Grammar.EPSILON)) {
                         addToFollow.remove(Grammar.EPSILON);
-                        addToFollow.addAll(followSets.get(rule.getRuleVar()));
+                        addToFollow.addAll(followSets.get(rule.getVar()));
                     }
                 }
                 if (!followSets.get(variable).containsAll(addToFollow)) {

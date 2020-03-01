@@ -23,7 +23,7 @@ public class ToolTest {
     @Test(expected = NoSuchFileException.class)
     public void testToolNew() throws IOException  {
         //noinspection unused
-        Tool tool = new Tool();
+        Tool tool = new Tool(); //NOSONAR
         Tool.main(new String[]{"../../examples/_missing.g4"});
     }
 }
