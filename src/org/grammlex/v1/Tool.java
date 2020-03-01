@@ -7,18 +7,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Tool {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         if (args.length < 1) {
-            System.err.println("Missing grammar file argument"); //NOSONAR
-            System.exit(1);
+            throw new IllegalArgumentException("Missing grammar file argument");
         }
-        try {
-            String grammarText = readFile(Paths.get(args[0]));
-            Grammar grammar = new Grammar(grammarText);
-            System.out.print(grammar.dumpGrammar()); //NOSONAR
-        } catch (IOException x) {
-            System.err.format("IOException: %s%n", x); //NOSONAR
-        }
+        String grammarText = readFile(Paths.get(args[0]));
+        Grammar grammar = new Grammar(grammarText);
+        System.out.println(grammar.dumpGrammar()); //NOSONAR
     }
 
     public static String readFile(Path path) throws IOException {

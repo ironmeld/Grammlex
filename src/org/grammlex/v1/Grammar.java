@@ -70,10 +70,10 @@ public class Grammar {
                 rule.append(line);
                 if (line.endsWith(";")) {
                     makeRule(rule.toString(), isFirstRule);
+                    isFirstRule = false;
                     rule.setLength(0);
                 }
             }
-            isFirstRule = false;
         }
         if (rule.length() != 0) {
             throw new IllegalArgumentException("ERROR: Missing semicolon? Leftover text at end of grammar.");
@@ -113,6 +113,7 @@ public class Grammar {
                 } else {
                     terminals.add(term);
                 }
+                termIndex++;
             }
             rules.add(new Rule(leftSide, terms));
         }
@@ -216,9 +217,6 @@ public class Grammar {
      */
     public Set<String> computeFirst(String[] terms, int index) {
         Set<String> first = new HashSet<>();
-        if (index == terms.length) {
-            return first;
-        }
 
         // if the first term is a terminal or epsilon that is the first set.
         // Stop here. Nothing after epsilon and Anything after that terminal is not first.
@@ -305,5 +303,9 @@ public class Grammar {
             }
         }
         return false;
+    }
+
+    public Map<String, Set<String>> getFirstSets() {
+        return firstSets;
     }
 }

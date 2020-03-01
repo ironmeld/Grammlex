@@ -9,6 +9,9 @@ Grammlex is in development and is not ready for use.
 * Converts terms with modifiers, * + and ?, to lower level terms without them
 * Computes the FIRST set of all (left side) variables
 * Prints grammar details
+* "Modern" code, free of warnings (IntelliJ + SonarLint circa 2020)
+* Code has comments
+* Includes tests
 
 ## Install and Build
 First, make sure you have the java compiler (javac) installed.
@@ -28,7 +31,7 @@ map: ID COLON STRING NL;
 ```
 Run the program:
 ```
-$ java -jar BUILD/grammlex.jar examples/mfield.g4
+$ java -jar BUILD/grammlex.jar examples/mfield.g4 
 Extended Rules:
 S: document*;
 document: BOM? HEADER value+ TRAILER;
@@ -38,7 +41,7 @@ map: ID COLON STRING NL;
 Rules:
 0: S': S;
 1: S: document_repeat;
-2: document: value_repeat1 HEADER value+ TRAILER;
+2: document: BOM_opt HEADER value_repeat1 TRAILER;
 3: value: map;
 4: map: ID COLON STRING NL;
 5: document_repeat: epsilon;
@@ -71,12 +74,12 @@ NL
 First Sets:
 BOM_opt: [epsilon, BOM]
 value_repeat1: [ID]
-S: [epsilon, ID]
-S': [epsilon, ID]
-document: [ID]
+S: [epsilon, BOM, HEADER]
+S': [epsilon, BOM, HEADER]
+document: [BOM, HEADER]
 value: [ID]
 map: [ID]
-document_repeat: [epsilon, ID]
+document_repeat: [epsilon, BOM, HEADER]
 ```
 ### Acknowledgments
 A significant portion of the LR(1) code is derived from
