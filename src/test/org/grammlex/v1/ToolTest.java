@@ -25,7 +25,7 @@ public class ToolTest {
 
     @Test(expected = NoSuchFileException.class)
     public void testToolOpenBad() throws IOException  {
-        Tool.main(new String[]{TEST_FILE});
+        Tool.main(new String[]{MISSING_FILE});
     }
 
     @Test(expected = NoSuchFileException.class)
