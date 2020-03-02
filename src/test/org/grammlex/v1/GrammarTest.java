@@ -7,9 +7,9 @@ public class GrammarTest {
     public void testGrammar() {
         Grammar grammar = new Grammar(
                 "S: document*;\n" +
-                        "document: BOM? HEADER value+ TRAILER;\n" +
-                        "value: map;\n" +
-                        "map: ID COLON STRING NL;\n");
+                "document: BOM? HEADER value+ TRAILER;\n" +
+                "value: map;\n" +
+                "map: ID COLON STRING NL;\n");
 
         assert (grammar.getFirstSets().get("document").contains("HEADER"));
         System.out.println(grammar.dumpGrammar()); //NOSONAR

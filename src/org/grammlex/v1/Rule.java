@@ -1,8 +1,8 @@
 package org.grammlex.v1;
 
 public class Rule {
-    private final String variable;
-    private final String[] terms;
+    protected final String variable;
+    protected final String[] terms;
 
     public Rule(String variable, String[] terms) {
         this.variable = variable;

@@ -380,6 +380,24 @@ public class Grammar {
         return false;
     }
 
+    public List<Rule> getRules() {
+        return rules;
+    }
+
+    public Set<Rule> getRulesByVar(String variable) {
+        HashSet<Rule> variableRules = new HashSet<>();
+        for (Rule rule : rules) {
+            if (rule.getVar().equals(variable)) {
+                variableRules.add(rule);
+            }
+        }
+        return variableRules;
+    }
+
+    public Set<String> getVariables() {
+        return variables;
+    }
+
     public Map<String, Set<String>> getFirstSets() {
         return firstSets;
     }

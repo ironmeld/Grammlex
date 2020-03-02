@@ -26,4 +26,11 @@ public class ToolTest {
         Tool tool = new Tool(); //NOSONAR
         Tool.main(new String[]{"../../examples/_missing.g4"});
     }
+
+    @Test(expected = NoSuchFileException.class)
+    public void testToolDebug() throws IOException  {
+        //noinspection unused
+        Tool tool = new Tool(); //NOSONAR
+        Tool.main(new String[]{"-d", "-q", "../../examples/_missing.g4"});
+    }
 }
