@@ -14,7 +14,6 @@ public class LR1State {
         closure();
     }
 
-
     private void closure() {
         boolean changed;
         do {
@@ -35,8 +34,8 @@ public class LR1State {
     private boolean closureOneItem(LR1Item item) {
         boolean changed = false;
         /* dot before a variable? */
-        if (item.getDotPointer() != item.getTerms().length
-                && grammar.getVariables().contains(item.getCurrent())) {
+        if (item.getDotPosition() != item.getTerms().length
+                && grammar.getVariables().contains(item.getNextTerm())) {
             /*
                We found an item X ->  . Y *  (with lookahead l)
                (Asterisk * means any set of terminals or none).
@@ -64,10 +63,10 @@ public class LR1State {
                be the lookahead of the original item (lookahead l).
             */
             HashSet<String> lookahead = new HashSet<>();
-            if (item.getDotPointer() == item.getTerms().length - 1) {
+            if (item.getDotPosition() == item.getTerms().length - 1) {
                 lookahead.addAll(item.getLookahead());
             } else {
-                Set<String> firstSet = grammar.computeFirst(item.getTerms(), item.getDotPointer() + 1);
+                Set<String> firstSet = grammar.computeFirst(item.getTerms(), item.getDotPosition() + 1);
                 if (firstSet.contains(Grammar.EPSILON)) {
                     firstSet.remove(Grammar.EPSILON);
                     firstSet.addAll(item.getLookahead());
@@ -79,7 +78,7 @@ public class LR1State {
                then for every rule Y -> *, we create new items for that
                rule for each lookahead terminal.
             */
-            Set<Rule> rules = grammar.getRulesByVar(item.getCurrent());
+            Set<Rule> rules = grammar.getRulesByVar(item.getNextTerm());
             for (Rule rule : rules) {
                 if (closureCreateItems(rule, lookahead)) {
                     changed = true;
@@ -137,6 +136,4 @@ public class LR1State {
         }
         return s.toString();
     }
-
 }
-

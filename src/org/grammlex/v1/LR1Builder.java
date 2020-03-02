@@ -51,8 +51,8 @@ public class LR1Builder {
 
         /* go through all items in state looking for next terms */
         for (LR1Item item : state.getItems()) {
-            if (item.getCurrent() != null) {
-                stringWithDot.add(item.getCurrent());
+            if (item.getNextTerm() != null) {
+                stringWithDot.add(item.getNextTerm());
             }
         }
         if (debugLevel > 0 && stringWithDot.isEmpty()) {
@@ -111,10 +111,10 @@ public class LR1Builder {
          * next term, then we add that item, moving its dot past the term.
          */
         for (LR1Item originalItem : originalState.getItems()) {
-            if (originalItem.getCurrent() != null && originalItem.getCurrent().equals(term)) {
+            if (originalItem.getNextTerm() != null && originalItem.getNextTerm().equals(term)) {
                 nextStateItems.add(new LR1Item(originalItem.getVar(),
                         originalItem.getTerms(),
-                        originalItem.getDotPointer() + 1,
+                        originalItem.getDotPosition() + 1,
                         new HashSet<>(originalItem.getLookahead())));
             }
         }

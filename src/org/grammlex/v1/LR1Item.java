@@ -7,23 +7,23 @@ import java.util.Set;
 public class LR1Item extends Rule {
 
     private final Set<String> lookahead;
-    private final int dotPointer;
+    private final int dotPosition;
 
-    public LR1Item(String variable, String[] terms, int dotPointer, Set<String> lookahead){
+    public LR1Item(String variable, String[] terms, int dotPosition, Set<String> lookahead){
         super(variable, terms);
-        this.dotPointer = dotPointer;
+        this.dotPosition = dotPosition;
         this.lookahead = lookahead;
     }
 
-    public String getCurrent(){
-        if(dotPointer == terms.length){
+    public String getNextTerm(){
+        if(dotPosition == terms.length){
             return null;
         }
-        return terms[dotPointer];
+        return terms[dotPosition];
     }
 
-    public int getDotPointer() {
-        return dotPointer;
+    public int getDotPosition() {
+        return dotPosition;
     }
     public Set<String> getLookahead() {
         return lookahead;
@@ -34,7 +34,7 @@ public class LR1Item extends Rule {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LR1Item lr1Item = (LR1Item) o;
-        return dotPointer == lr1Item.getDotPointer() &&
+        return dotPosition == lr1Item.getDotPosition() &&
                 Objects.equals(lookahead, lr1Item.getLookahead()) &&
                 Objects.equals(variable, lr1Item.getVar()) &&
                 Arrays.equals(terms, lr1Item.getTerms());
@@ -43,13 +43,13 @@ public class LR1Item extends Rule {
     public  boolean equalLR0(LR1Item item){
         return variable.equals(item.getVar())
                 && Arrays.equals(terms,item.getTerms())
-                && dotPointer == item.getDotPointer();
+                && dotPosition == item.getDotPosition();
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 31 * hash + this.dotPointer;
+        hash = 31 * hash + this.dotPosition;
         hash = 31 * hash + Objects.hashCode(this.variable);
         hash = 31 * hash + Arrays.deepHashCode(this.terms);
         hash = 31 * hash + Objects.hashCode(this.lookahead);
@@ -60,7 +60,7 @@ public class LR1Item extends Rule {
     public String toString() {
         StringBuilder str = new StringBuilder(variable).append( ": ");
         for (int i = 0; i < terms.length; i++) {
-            if (i == dotPointer) {
+            if (i == dotPosition) {
                 str.append("• ");
             }
             str.append(terms[i]);
@@ -68,7 +68,7 @@ public class LR1Item extends Rule {
                 str.append(" ");
             }
         }
-        if (terms.length == dotPointer) {
+        if (terms.length == dotPosition) {
             str.append(" •");
         }
         str.append(" , ").append(lookahead);
