@@ -55,6 +55,7 @@ JUNIT_CLASSES := $(subst src/,src/test/,$(DEBUG_CLASSES:.class=Test.class)) src/
 JUNIT_JAR ?= $(HOME)/.m2/repository/junit/junit/4.12/junit-4.12.jar
 HAMCREST_JAR ?= $(HOME)/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
 
+all: default debug test
 # These the debug classes are classes built in the location that IntelliJ expects for debugging (the source directories).
 # Build the "debug" target before launching the debugger
 debug: $(DEBUG_CLASSES)
