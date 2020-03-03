@@ -86,7 +86,7 @@ $(BUILDDIR):
 # The second rule is for the DEBUG_CLASSES in the src directory.
 # The third rule is for the JUNIT_CLASSES in the src/test directory.
 define define_compile_rules
-$(subst src/,$(BUILDDIR)/,$(1))/%.class: $(1)/%.java $(BUILDDIR)
+$(subst src/,$(BUILDDIR)/,$(1))/%.class: $(1)/%.java | $(BUILDDIR)
 	(cd src;$(JAVAC) -d $(BUILDDIR) $$(subst src/,,$$<))
 
 $(1)/%.class: $(1)/%.java
