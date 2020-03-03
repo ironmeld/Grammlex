@@ -306,69 +306,68 @@ public class Grammar {
         return changed;
     }
 
-    public String dumpGrammar() {
-        return "Extended Rules:\n" +
-                dumpExtendedRules() +
-                "\nRules:\n" +
-                dumpRules() +
-                "\n" +
-                "Start Variable: " +
-                startVariable + "\n" +
-                "\nVariables:\n" +
-                dumpVariables() +
-                "\nTerminals:\n" +
-                dumpTerminals() +
-                "\nFirst Sets:\n" +
-                dumpFirstSets() +
-                "\nFollow Sets:\n" +
-                dumpFollowSets();
+    public StringBuilder outputGrammar(StringBuilder out) {
+        out.append("Extended Rules:\n");
+        outputExtendedRules(out).append("\n");
+
+        out.append("Rules:\n");
+        outputRules(out).append("\n");
+
+        out.append("Start Variable: ").append(startVariable).append("\n\n");
+
+        out.append("Variables:\n");
+        outputVariables(out).append("\n");
+
+        out.append("Terminals:\n");
+        outputTerminals(out).append("\n");
+
+        out.append("First Sets:\n");
+        outputFirstSets(out).append("\n");
+
+        out.append("Follow Sets:\n");
+
+        return outputFollowSets(out);
     }
 
-    public String dumpExtendedRules() {
-        StringBuilder dump = new StringBuilder();
+    public StringBuilder outputExtendedRules(StringBuilder out) {
         for (Rule eRule : extendedRules) {
-            dump.append(eRule).append("\n");
+            out.append(eRule).append("\n");
         }
-        return dump.toString();
+        return out;
     }
 
-    public String dumpRules() {
-        StringBuilder dump = new StringBuilder();
+    public StringBuilder outputRules(StringBuilder out) {
         for (int i = 0; i < rules.size(); i++) {
-            dump.append(i).append(": ");
-            dump.append(rules.get(i)).append("\n");
+            out.append(i).append(": ");
+            out.append(rules.get(i)).append("\n");
         }
-        return dump.toString();
+        return out;
     }
 
-    public String dumpVariables() {
-        StringBuilder dump = new StringBuilder();
+    public StringBuilder  outputVariables(StringBuilder out) {
         for (String variable : variables) {
-            dump.append(variable).append("\n");
+            out.append(variable).append("\n");
         }
-        return dump.toString();
+        return out;
     }
 
-    public String dumpTerminals() {
-        StringBuilder dump = new StringBuilder();
+    public StringBuilder outputTerminals(StringBuilder out) {
         for (String terminal : terminals) {
-            dump.append(terminal).append("\n");
+            out.append(terminal).append("\n");
         }
-        return dump.toString();
+        return out;
     }
 
-    public String dumpFirstSets() {
-        StringBuilder dump = new StringBuilder();
+    public StringBuilder outputFirstSets(StringBuilder out) {
         firstSets.forEach((variable, firstSet)
-                -> dump.append(variable).append(": ").append(firstSet).append("\n"));
-        return dump.toString();
+                -> out.append(variable).append(": ").append(firstSet).append("\n"));
+        return out;
     }
 
-    public String dumpFollowSets() {
-        StringBuilder dump = new StringBuilder();
+    public StringBuilder outputFollowSets(StringBuilder out) {
         followSets.forEach((variable, followSet)
-                -> dump.append(variable).append(": ").append(followSet).append("\n"));
-        return dump.toString();
+                -> out.append(variable).append(": ").append(followSet).append("\n"));
+        return out;
     }
 
     protected static boolean startsWithAny(String str, String[] prefixes) {
@@ -385,7 +384,7 @@ public class Grammar {
     }
 
     public Set<Rule> getRulesByVar(String variable) {
-        HashSet<Rule> variableRules = new HashSet<>();
+        Set<Rule> variableRules = new HashSet<>();
         for (Rule rule : rules) {
             if (rule.getVar().equals(variable)) {
                 variableRules.add(rule);

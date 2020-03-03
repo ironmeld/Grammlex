@@ -14,8 +14,33 @@ public class ToolTest {
     }
 
     @Test
-    public void testToolOpenDebug() throws IOException  {
-        Tool.main(new String[]{"-d", "-q", TEST_FILE});
+    public void testToolShowDetails() throws IOException  {
+        Tool.main(new String[]{TEST_FILE, "show", "-d", "rules"});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testToolShowBad() throws IOException  {
+        Tool.main(new String[]{TEST_FILE, "show"});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testToolShowBadType() throws IOException  {
+        Tool.main(new String[]{TEST_FILE, "show", "foo"});
+    }
+
+    @Test
+    public void testToolShowFirstFollow() throws IOException  {
+        Tool.main(new String[]{TEST_FILE, "show", "-q", "firstSets,followSets"});
+    }
+
+    @Test
+    public void testToolShowReport() throws IOException  {
+        Tool.main(new String[]{TEST_FILE, "show", "-d", "grammar,createStates,states"});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testToolOpenBadArg() throws IOException  {
+        Tool.main(new String[]{TEST_FILE, "-d", "show", "rules"});
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -7,13 +7,14 @@ Grammlex is in development and is not ready for use.
 ## Features
 * Reads a grammar in a subset of the ANTLR4 format.
 * Converts terms with modifiers, * + and ?, to lower level terms without them
+* A "show" command to select output (grammar, rules, firstSets, followSets, createStates, states)
 * Prints grammar details
 * Computes the FIRST set of all (left side) variables
 * Computes the FOLLOW set of all (left side) variables
 * Computes the item sets for each LR(1) state and transitions to other states
 * "Modern" code, free of warnings (IntelliJ + SonarLint circa 2020)
 * Code has comments
-* Includes tests
+* Code has tests
 
 ## Install and Build
 First, make sure you have the java compiler (javac) installed.
@@ -33,7 +34,7 @@ map: ID COLON STRING NL;
 ```
 Run the program:
 ```
-$ java -jar BUILD/grammlex.jar examples/mfield.g4
+$ java -jar BUILD/grammlex.jar examples/mfield.g4 show grammar,createStates,states
 Extended Rules:
 S: document*;
 document: BOM? HEADER value+ TRAILER;
@@ -92,7 +93,6 @@ document: [BOM, $, HEADER]
 value: [ID, TRAILER]
 map: [ID, TRAILER]
 document_repeat: [$]
-
 
 Creating initial state from item: S': • S , [$]
     state after closure:
@@ -368,7 +368,6 @@ map: ID COLON STRING • NL , [ID, TRAILER]
 
 State #16:
 map: ID COLON STRING NL • , [ID, TRAILER]
-
 ```
 ### Acknowledgments
 A significant portion of the LR(1) code is derived from

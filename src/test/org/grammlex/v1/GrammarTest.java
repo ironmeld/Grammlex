@@ -12,7 +12,9 @@ public class GrammarTest {
                 "map: ID COLON STRING NL;\n");
 
         assert (grammar.getFirstSets().get("document").contains("HEADER"));
-        System.out.println(grammar.dumpGrammar()); //NOSONAR
+        StringBuilder out = new StringBuilder();
+        grammar.outputGrammar(out).append("\n");
+        System.out.println(out.toString()); //NOSONAR
     }
 
     @Test
@@ -24,18 +26,24 @@ public class GrammarTest {
                 "document: BOM? HEADER value+ TRAILER;\n" +
                 "value: map;\n" +
                 "map: ID COLON STRING NL;\n");
-        System.out.println(grammar.dumpGrammar()); //NOSONAR
+        StringBuilder out = new StringBuilder();
+        grammar.outputGrammar(out);
+        System.out.println(out.toString()); //NOSONAR
     }
 
     @Test
     public void testGrammarWithEpsilon() {
         Grammar grammar = new Grammar("S: epsilon;");
-        System.out.println(grammar.dumpGrammar()); //NOSONAR
+        StringBuilder out = new StringBuilder();
+        grammar.outputGrammar(out);
+        System.out.println(out.toString()); //NOSONAR
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testGrammarMissingSemi() {
         Grammar grammar = new Grammar("S: HEADER");
-        System.out.println(grammar.dumpGrammar()); //NOSONAR
+        StringBuilder out = new StringBuilder();
+        grammar.outputGrammar(out);
+        System.out.println(out.toString()); //NOSONAR
     }
 }

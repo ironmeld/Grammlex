@@ -11,22 +11,21 @@ public class LR1Builder {
         this.grammar = grammar;
     }
 
-    protected void createStatesForCLR1(int debugLevel, StringBuilder debugOut) {
-        StringBuilder out = Objects.requireNonNullElseGet(debugOut, StringBuilder::new);
+    protected void createStatesForCLR1(int detailLevel, StringBuilder out) {
         Rule startRule = grammar.getRules().get(0);
         Set<String> startLookahead = new HashSet<>();
         startLookahead.add("$");
 
         LR1Item firstItem = new LR1Item(startRule.getVar(), startRule.getTerms(), 0, startLookahead);
 
-        if (debugLevel > 0) {
+        if (detailLevel > 0) {
             out.append("\nCreating initial state from item: ").append(firstItem).append("\n");
         }
         Set<LR1Item> start = new HashSet<>();
         start.add(firstItem);
         LR1State startState = new LR1State(grammar, start);
 
-        if (debugLevel > 0) {
+        if (detailLevel > 0) {
             out.append("    state after closure:\n");
             for (LR1Item item : startState.getItems()) {
                 out.append("        item: ").append(item).append("\n");
@@ -38,13 +37,12 @@ public class LR1Builder {
 
         /* go through all states to process */
         for (int i = 0; i < states.size(); i++) {
-            createStatesFromState(states.get(i), i, debugLevel, out);
+            createStatesFromState(states.get(i), i, detailLevel, out);
         }
     }
 
-    public void createStatesFromState(LR1State state, int stateNum, int debugLevel, StringBuilder debugOut) {
-        StringBuilder out = Objects.requireNonNullElseGet(debugOut, StringBuilder::new);
-        if (debugLevel > 0) {
+    public void createStatesFromState(LR1State state, int stateNum, int detailLevel, StringBuilder out) {
+        if (detailLevel > 0) {
             out.append("Processing transitions for state ").append(stateNum).append("\n");
         }
         Set<String> stringWithDot = new HashSet<>();
@@ -55,27 +53,27 @@ public class LR1Builder {
                 stringWithDot.add(item.getNextTerm());
             }
         }
-        if (debugLevel > 0 && stringWithDot.isEmpty()) {
+        if (detailLevel > 0 && stringWithDot.isEmpty()) {
             out.append("   No new states. All terms are reduces.\n");
         }
         List<String> stringWithDotList = new ArrayList<>(stringWithDot);
         Collections.sort(stringWithDotList);
         /* for each unique next term, build transition states */
         for (String term : stringWithDotList) {
-            createNextStateForTerm(state, stateNum, term, debugLevel, out);
+            createNextStateForTerm(state, stateNum, term, detailLevel, out);
         }
-        if (debugLevel > 0) out.append("\n");
+        if (detailLevel > 0) out.append("\n");
     }
 
     public void createNextStateForTerm(LR1State state, int stateNum, String term,
-                                  int debugLevel, StringBuilder out) {
-        if (debugLevel > 0) {
+                                  int detailLevel, StringBuilder out) {
+        if (detailLevel > 0) {
             out.append("   Process transition from state ").append(stateNum)
                     .append(" for term ").append(term).append("\n");
         }
 
         Set<LR1Item> nextStateItems = createNextStateItems(state, term);
-        if (debugLevel > 0) {
+        if (detailLevel > 0) {
             out.append("        New state before closure:\n");
             for (LR1Item item : nextStateItems) {
                 out.append("            item: ").append(item).append("\n");
@@ -83,7 +81,7 @@ public class LR1Builder {
         }
 
         LR1State nextState = new LR1State(grammar, nextStateItems);
-        if (debugLevel > 0) {
+        if (detailLevel > 0) {
             out.append("        New state after closure:\n");
             for (LR1Item item : nextState.getItems()) {
                 out.append("            item: ").append(item).append("\n");
@@ -93,7 +91,7 @@ public class LR1Builder {
         if (!checkExistingState(state, term, nextState)) {
             states.add(nextState);
             state.getTransition().put(term, nextState);
-            if (debugLevel > 0) {
+            if (detailLevel > 0) {
                 out.append("        Created transition from ").append(stateNum)
                         .append(" with ").append(term)
                         .append(" to new state ").append((states.size() - 1))
@@ -134,5 +132,15 @@ public class LR1Builder {
 
     public List<LR1State> getStates() {
         return states;
+    }
+
+    public void outputStates(StringBuilder out) {
+        int stateNum = 0;
+        for (LR1State state : states) {
+            out.append("State #").append(stateNum).append(":\n");
+            out.append(state.toString());
+            out.append("\n");
+            stateNum++;
+        }
     }
 }

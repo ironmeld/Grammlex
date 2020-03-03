@@ -7,6 +7,9 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
     RuleTest.class,
     GrammarTest.class,
+    LR1ItemTest.class,
+    LR1StateTest.class,
+    LR1BuilderTest.class,
     ToolTest.class,
 })
 public class AllTest {
