@@ -22,7 +22,8 @@ public class Tool {
 
     public static void main(String[] args) throws IOException {
         StringBuilder out = new StringBuilder();
-        handleCommands(out, args);
+        //noinspection unused
+        int throwaway = handleCommands(out, args); //NOSONAR
         System.out.print(out); //NOSONAR
     }
 
@@ -57,23 +58,6 @@ public class Tool {
     public static int handleShowCommand(Grammar grammar, LR1Builder builder,
                                         Map<String, StringBuilder> cachedContent,
                                         String[] args, int currentArg, StringBuilder out) {
-        int detailLevel = 1;
-
-        boolean foundOption = true;
-        while (foundOption && currentArg < args.length) {
-            foundOption = false;
-            if (args[currentArg].equals("-d")) {
-                currentArg++;
-                foundOption = true;
-                detailLevel++;
-            }
-            if (args[currentArg].equals("-q")) {
-                currentArg++;
-                foundOption = true;
-                detailLevel--;
-            }
-        }
-
         String contentTypes;
         if (currentArg >= args.length) {
             contentTypes = "grammar,createStates,states";
@@ -82,7 +66,7 @@ public class Tool {
             currentArg++;
         }
         for (String contentType : contentTypes.split(",")) {
-            updateCachedContent(grammar, builder, cachedContent, contentType, detailLevel);
+            updateCachedContent(grammar, builder, cachedContent, contentType);
             out.append(cachedContent.get(contentType));
         }
         return currentArg;
@@ -90,8 +74,7 @@ public class Tool {
 
     public static void updateCachedContent(Grammar grammar, LR1Builder builder,
                                     Map<String, StringBuilder> cachedContent,
-                                    String contentType,
-                                    int detailLevel) {
+                                    String contentType) {
         if (!contentTypes.contains(contentType)) {
             throw new IllegalArgumentException(
                     "ERROR: grammlex: show: Unknown content type: " + contentType);
@@ -126,7 +109,7 @@ public class Tool {
                 case TYPE_STATES:
                 case TYPE_CREATE_STATES:
                     newContent = new StringBuilder();
-                    builder.createStatesForCLR1(detailLevel, newContent);
+                    builder.createStatesForCLR1(newContent);
                     cachedContent.put(TYPE_CREATE_STATES, newContent);
                     newContent = new StringBuilder();
                     builder.outputStates(newContent);

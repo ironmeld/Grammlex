@@ -13,7 +13,7 @@ public class LR1BuilderTest {
 
         StringBuilder out = new StringBuilder();
         LR1Builder builder = new LR1Builder(grammar);
-        builder.createStatesForCLR1(1, out); //NOSONAR
+        builder.createStatesForCLR1(out); //NOSONAR
 
         int stateNum = 0;
         for (LR1State state : builder.getStates()) {
