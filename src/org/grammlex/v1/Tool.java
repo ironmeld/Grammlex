@@ -16,43 +16,51 @@ public class Tool {
     public static final String TYPE_STATES = "states";
     public static final String TYPE_CREATE_STATES = "createStates";
 
-
     protected static final Set<String> contentTypes = new HashSet<>(Arrays.asList(
             TYPE_GRAMMAR, TYPE_RULES, TYPE_FIRST_SETS, TYPE_FOLLOW_SETS,
             TYPE_STATES, TYPE_CREATE_STATES));
 
     public static void main(String[] args) throws IOException {
         StringBuilder out = new StringBuilder();
+        handleCommands(out, args);
+        System.out.print(out); //NOSONAR
+    }
+
+    public static int handleCommands(StringBuilder out, String[] args) throws IOException {
+        return handleCommands(out, args, 0);
+    }
+
+    public static int handleCommands(StringBuilder out, String[] args, int currentArg) throws IOException {
         Map<String, StringBuilder> cachedContent = new HashMap<>();
         if (args.length < 1) {
             throw new IllegalArgumentException("Missing grammar file argument");
         }
-        int currentArg = 0;
         String grammarText = readFile(Paths.get(args[currentArg++]));
         Grammar grammar = new Grammar(grammarText);
         LR1Builder builder = new LR1Builder(grammar);
 
+        if (currentArg >= args.length) {
+            currentArg = handleShowCommand(grammar, builder, cachedContent, args, currentArg, out);
+        }
         while (currentArg < args.length) {
             if (args[currentArg].equals(CMD_SHOW)) {
+                currentArg++;
                 currentArg = handleShowCommand(grammar, builder, cachedContent, args, currentArg, out);
             } else {
                 throw new IllegalArgumentException("Unknown command: " + args[currentArg]);
             }
             currentArg++;
         }
-        System.out.print(out); //NOSONAR
+        return currentArg;
     }
 
     public static int handleShowCommand(Grammar grammar, LR1Builder builder,
-                                         Map<String, StringBuilder> cachedContent,
-                                         String[] args, int currentArg, StringBuilder out) {
+                                        Map<String, StringBuilder> cachedContent,
+                                        String[] args, int currentArg, StringBuilder out) {
         int detailLevel = 1;
-        currentArg++;
-        if (currentArg == args.length) {
-            throw new IllegalArgumentException("ERROR: grammlex: show: Missing content types");
-        }
-        boolean foundOption;
-        do {
+
+        boolean foundOption = true;
+        while (foundOption && currentArg < args.length) {
             foundOption = false;
             if (args[currentArg].equals("-d")) {
                 currentArg++;
@@ -64,14 +72,22 @@ public class Tool {
                 foundOption = true;
                 detailLevel--;
             }
-        } while (foundOption && currentArg < args.length);
+        }
 
-        for (String contentType : args[currentArg].split(",")) {
+        String contentTypes;
+        if (currentArg >= args.length) {
+            contentTypes = "grammar,createStates,states";
+        } else {
+            contentTypes = args[currentArg];
+            currentArg++;
+        }
+        for (String contentType : contentTypes.split(",")) {
             updateCachedContent(grammar, builder, cachedContent, contentType, detailLevel);
             out.append(cachedContent.get(contentType));
         }
         return currentArg;
     }
+
     public static void updateCachedContent(Grammar grammar, LR1Builder builder,
                                     Map<String, StringBuilder> cachedContent,
                                     String contentType,
