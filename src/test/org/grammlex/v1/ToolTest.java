@@ -30,9 +30,9 @@ public class ToolTest {
         assert(!out.toString().contains("State #17")); }
 
     @Test
-    public void testToolShowDetails() throws IOException {
+    public void testToolShowRules() throws IOException {
         StringBuilder out = new StringBuilder();
-        Tool.handleCommands(out, new String[]{TEST_FILE, "show", "-d", "rules"});
+        Tool.handleCommands(out, new String[]{TEST_FILE, "show", "rules"});
         assert (out.toString().contains(RULE_1));
     }
 
@@ -46,7 +46,7 @@ public class ToolTest {
     public void testToolShowFirstFollow() throws IOException  {
         StringBuilder out = new StringBuilder();
         Tool.handleCommands(out,
-                new String[] {TEST_FILE, "show", "-q", "firstSets,followSets"});
+                new String[] {TEST_FILE, "show", "firstSets,followSets"});
         assert(out.toString().contains("S: [epsilon, BOM, HEADER]"));
         assert(!out.toString().contains(RULE_1));
     }
@@ -56,7 +56,7 @@ public class ToolTest {
         StringBuilder out = new StringBuilder();
         Tool.handleCommands(out,
                 new String[]{TEST_FILE,
-                        "show", "-d", "grammar,createStates,states"});
+                        "show", "grammar,createStates,states"});
         assert(out.toString().contains(RULE_1));
         assert(out.toString().contains("S: [epsilon, BOM, HEADER]"));
     }
