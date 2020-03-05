@@ -10,6 +10,7 @@ import org.junit.runners.Suite;
     LR1ItemTest.class,
     LR1StateTest.class,
     LR1BuilderTest.class,
+    ActionTest.class,
     ToolTest.class,
 })
 public class AllTest {

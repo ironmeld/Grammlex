@@ -6,6 +6,7 @@ import java.nio.file.NoSuchFileException;
 
 public class ToolTest {
     private static final String TEST_FILE = "../../examples/mfield.g4";
+    private static final String TEST_FILE_NON_LR1 = "../../examples/nonlr1.g4";
     private static final String MISSING_FILE = "../../examples/_missing.g4";
     private static final String RULE_1 = "1: S: document_repeat;";
 
@@ -61,6 +62,13 @@ public class ToolTest {
         assert(out.toString().contains("S: [epsilon, BOM, HEADER]"));
     }
 
+    @Test
+    public void testToolShowActionTable() throws IOException  {
+        StringBuilder out = new StringBuilder();
+        Tool.handleCommands(out,
+                new String[] {TEST_FILE, "show", "actionTable"});
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testToolOpenBadArg() throws IOException  {
         StringBuilder out = new StringBuilder();
@@ -86,5 +94,13 @@ public class ToolTest {
         Tool tool = new Tool(); //NOSONAR
         StringBuilder out = new StringBuilder();
         Tool.handleCommands(out, new String[]{MISSING_FILE});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testToolNonLR1() throws IOException {
+        StringBuilder out = new StringBuilder();
+        Tool.handleCommands(out,
+                new String[] {TEST_FILE_NON_LR1, "show", "actionTable"});
+
     }
 }

@@ -46,4 +46,14 @@ public class GrammarTest {
         grammar.outputGrammar(out);
         System.out.println(out.toString()); //NOSONAR
     }
+
+    @Test
+    public void testGrammarRules() {
+        Grammar grammar = new Grammar("S: HEADER;");
+        Rule rule = new Rule("S", new String[] {"HEADER"});
+        assert(grammar.findRuleIndex(rule) == 1);
+
+        rule = new Rule("S", new String[] {"FOOBAR"});
+        assert(grammar.findRuleIndex(rule) == -1);
+    }
 }

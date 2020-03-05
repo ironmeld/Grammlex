@@ -2,10 +2,18 @@ package org.grammlex.v1;
 
 import java.util.*;
 
+/* An LR1State represents the "collective" state of the parser when it
+   is open to matching multiple rules simultaneously.
+
+   Specifically, an LR1State is a collection of LR1Items which represent
+   a position within a rule that the parser might be in. It also includes
+   a set of transitions to other LR1States directly when a next terminal
+   is encountered or, indirectly when a next variable is "completed".
+ */
 public class LR1State {
+    private final Grammar grammar;
     private final LinkedHashSet<LR1Item> items;
     private final HashMap<String, LR1State> transition;
-    private final Grammar grammar;
 
     public LR1State(Grammar grammar, Set<LR1Item> coreItems) {
         this.grammar = grammar;

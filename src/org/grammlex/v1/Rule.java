@@ -1,5 +1,8 @@
 package org.grammlex.v1;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class Rule {
     protected final String variable;
     protected final String[] terms;
@@ -32,4 +35,31 @@ public class Rule {
     public String[] getTerms() {
         return terms;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = hash * 31 + Objects.hashCode(this.variable);
+        hash = hash * 31 + hash + Arrays.deepHashCode(this.terms);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Rule other = (Rule) obj;
+        if (!Objects.equals(this.variable, other.variable)) {
+            return false;
+        }
+        return Arrays.deepEquals(this.terms, other.terms);
+    }
+
 }

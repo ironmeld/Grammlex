@@ -15,10 +15,15 @@ public class Tool {
     public static final String TYPE_FOLLOW_SETS = "followSets";
     public static final String TYPE_STATES = "states";
     public static final String TYPE_CREATE_STATES = "createStates";
+    public static final String TYPE_ACTION_TABLE = "actionTable";
+    public static final String TYPE_GOTO_TABLE = "gotoTable";
 
     protected static final Set<String> contentTypes = new HashSet<>(Arrays.asList(
-            TYPE_GRAMMAR, TYPE_RULES, TYPE_FIRST_SETS, TYPE_FOLLOW_SETS,
-            TYPE_STATES, TYPE_CREATE_STATES));
+            TYPE_GRAMMAR, TYPE_RULES,
+            TYPE_FIRST_SETS, TYPE_FOLLOW_SETS,
+            TYPE_STATES, TYPE_CREATE_STATES,
+            TYPE_ACTION_TABLE, TYPE_GOTO_TABLE
+            ));
 
     public static void main(String[] args) throws IOException {
         StringBuilder out = new StringBuilder();
@@ -108,12 +113,22 @@ public class Tool {
 
                 case TYPE_STATES:
                 case TYPE_CREATE_STATES:
+                case TYPE_ACTION_TABLE:
+                case TYPE_GOTO_TABLE:
                     newContent = new StringBuilder();
-                    builder.createStatesForCLR1(newContent);
+                    if (!builder.createStatesForCLR1(newContent)) {
+                        throw new IllegalArgumentException("Grammar is not LR(1)!");
+                    }
                     cachedContent.put(TYPE_CREATE_STATES, newContent);
-                    newContent = new StringBuilder();
-                    builder.outputStates(newContent);
+
+                    newContent = builder.outputStates(new StringBuilder());
                     cachedContent.put(TYPE_STATES, newContent);
+
+                    newContent = builder.outputActionTable(new StringBuilder());
+                    cachedContent.put(TYPE_ACTION_TABLE, newContent);
+
+                    cachedContent.put(TYPE_GOTO_TABLE,
+                            builder.outputGotoTable(new StringBuilder()));
                     break;
 
                 default:
@@ -123,8 +138,7 @@ public class Tool {
     }
 
     public static String readFile(Path path) throws IOException {
-        byte[] encoded;
-        encoded = Files.readAllBytes(path);
+        byte[] encoded = Files.readAllBytes(path);
         return new String(encoded, StandardCharsets.UTF_8);
     }
 }

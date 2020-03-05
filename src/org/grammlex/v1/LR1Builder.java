@@ -5,13 +5,20 @@ import java.util.*;
 public class LR1Builder {
     private final Grammar grammar;
     private final ArrayList<LR1State> states;
+    protected final List<HashMap<String, Action>> actionTable= new ArrayList<>();
+    protected final List<HashMap<String, Integer>> gotoTable = new ArrayList<>();
 
     public LR1Builder(Grammar grammar) {
         states = new ArrayList<>();
         this.grammar = grammar;
     }
 
-    protected void createStatesForCLR1(StringBuilder out) {
+    /* Create the canonical LR(1) table. "Canonical" means the original,
+    standard LR(1), not any variation like LALR, SLR, or any other
+    from the "LR family".
+    https://en.wikipedia.org/wiki/Canonical_LR_parser
+     */
+    protected boolean createStatesForCLR1(StringBuilder out) {
         Rule startRule = grammar.getRules().get(0);
         Set<String> startLookahead = new HashSet<>();
         startLookahead.add("$");
@@ -30,9 +37,12 @@ public class LR1Builder {
         out.append("\n");
 
         /* go through all states to process */
-        for (int i = 0; i < states.size(); i++) {
-            createStatesFromState(states.get(i), i, out);
+        for (int stateNum = 0; stateNum < states.size(); stateNum++) {
+            createStatesFromState(states.get(stateNum), stateNum, out);
         }
+
+        createGotoTable();
+        return createActionTable();
     }
 
     public void createStatesFromState(LR1State state, int stateNum, StringBuilder out) {
@@ -76,14 +86,16 @@ public class LR1Builder {
 
         int foundStateNum = checkExistingState(state, term, nextState);
         if (foundStateNum != -1) {
-            out.append("        Same as existing transition ").append(foundStateNum)
+            out.append("        Created transition from ").append(stateNum)
+                    .append(" with ").append(term)
+                    .append(" to existing state ").append(foundStateNum)
                     .append("\n");
         } else {
             states.add(nextState);
             state.getTransition().put(term, nextState);
             out.append("        Created transition from ").append(stateNum)
                     .append(" with ").append(term)
-                    .append(" to new state ").append((states.size() - 1))
+                    .append(" to new state ").append(states.size() - 1)
                     .append("\n");
         }
     }
@@ -124,7 +136,16 @@ public class LR1Builder {
         return states;
     }
 
-    public void outputStates(StringBuilder out) {
+    protected int findStateIndex(LR1State state) {
+        for (int stateNum = 0; stateNum < states.size(); stateNum++) {
+            if (states.get(stateNum).equals(state)) {
+                return stateNum;
+            }
+        }
+        return -1;
+    }
+
+    public StringBuilder outputStates(StringBuilder out) {
         int stateNum = 0;
         for (LR1State state : states) {
             out.append("State #").append(stateNum).append(":\n");
@@ -132,5 +153,111 @@ public class LR1Builder {
             out.append("\n");
             stateNum++;
         }
+        return out;
+    }
+
+    protected void createGotoTable() {
+        for (int stateNum = 0; stateNum < states.size(); stateNum++) {
+            gotoTable.add(new HashMap<>());
+        }
+        for (int stateNum = 0; stateNum < states.size(); stateNum++) {
+            for (String term : states.get(stateNum).getTransition().keySet()) {
+                if (grammar.getVariables().contains(term)) {
+                    gotoTable.get(stateNum).put(term,
+                            findStateIndex(states.get(stateNum).getTransition().get(term)));
+                }
+            }
+        }
+    }
+
+    protected boolean createActionTable() {
+        for (int stateNum = 0; stateNum < states.size(); stateNum++) {
+            actionTable.add(stateNum, new HashMap<>());
+        }
+
+        populateShiftStates();
+        return populateReduceStates();
+    }
+
+    protected void populateShiftStates() {
+        for (int stateNum = 0; stateNum < states.size(); stateNum++) {
+            for (String term : states.get(stateNum).getTransition().keySet()) {
+                if (grammar.getTerminals().contains(term)) {
+                    actionTable.get(stateNum).put(term, new Action(Action.SHIFT,
+                            findStateIndex(states.get(stateNum).getTransition().get(term))));
+                }
+            }
+        }
+    }
+
+    protected boolean populateReduceStates() {
+        for (int stateNum = 0; stateNum < states.size(); stateNum++) {
+            for (LR1Item item : states.get(stateNum).getItems()) {
+                if (!populateReduceForStateItem(stateNum, item)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    protected boolean populateReduceForStateItem(int stateNum, LR1Item item) {
+        if (item.getDotPosition() == item.getTerms().length) {
+            if (item.getVar().equals("S'")) {
+                actionTable.get(stateNum).put("$", new Action(Action.ACCEPT, 0));
+            } else {
+                Rule rule = new Rule(item.getVar(), item.getTerms());
+                int index = grammar.findRuleIndex(rule);
+                Action action = new Action(Action.REDUCE, index);
+                for (String str : item.getLookahead()) {
+                    if (actionTable.get(stateNum).get(str) != null) {
+                        System.err.println("Action table has a REDUCE-" + //NOSONAR
+                                actionTable.get(stateNum).get(str).getTypeAsString() +
+                                " conflict in state " + stateNum);
+                        return false;
+                    } else {
+                        actionTable.get(stateNum).put(str, action);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    public StringBuilder outputActionTable(StringBuilder out) {
+        HashSet<String> terminals = new HashSet<>(grammar.getTerminals());
+        terminals.add("$");
+
+        out.append("Action Table:\n");
+        for (int stateNum = 0; stateNum < actionTable.size(); stateNum++) {
+            statePrefix(out, stateNum);
+            for (String terminal : terminals) {
+                if (actionTable.get(stateNum).get(terminal) != null) {
+                    out.append(actionTable.get(stateNum).get(terminal))
+                            .append(" on ").append(terminal).append(", ");
+                }
+            }
+            out.append("\n");
+        }
+        return out;
+    }
+
+    public StringBuilder outputGotoTable(StringBuilder out) {
+        out.append("Goto Table:\n");
+        for (int stateNum = 0; stateNum < gotoTable.size(); stateNum++) {
+            statePrefix(out, stateNum);
+            for (String variable : grammar.getVariables()) {
+                if (gotoTable.get(stateNum).get(variable) != null) {
+                    out.append("State ").append(gotoTable.get(stateNum).get(variable))
+                            .append(" on ").append(variable).append(", ");
+                }
+            }
+            out.append("\n");
+        }
+        return out;
+    }
+
+    protected static void statePrefix(StringBuilder out, int stateNum) {
+        out.append("State: ").append(stateNum).append(": ");
     }
 }

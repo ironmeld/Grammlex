@@ -393,8 +393,21 @@ public class Grammar {
         return variableRules;
     }
 
+    public int findRuleIndex(Rule rule) {
+        for (int i = 0; i < rules.size(); i++) {
+            if (rules.get(i).equals(rule)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public Set<String> getVariables() {
         return variables;
+    }
+
+    public Set<String> getTerminals() {
+        return terminals;
     }
 
     public Map<String, Set<String>> getFirstSets() {

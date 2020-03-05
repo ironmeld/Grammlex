@@ -4,6 +4,14 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 
+/* An LR1Item is a Rule which has been extended with a position
+   which represents a parser's state when it is in the process
+   of matching that rule.
+
+   LR1Items are collected together into an LR1State which represents
+   the "collective" state of the parser when it is open to matching
+   multiple rules simultaneously.
+ */
 public class LR1Item extends Rule {
 
     private final Set<String> lookahead;

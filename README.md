@@ -12,9 +12,10 @@ Grammlex is in development and is not ready for use.
 * Computes the FIRST set of all (left side) variables
 * Computes the FOLLOW set of all (left side) variables
 * Computes the item sets for each LR(1) state and transitions to other states
+* Computes the action table and goto table.
 * "Modern" code, free of warnings (IntelliJ + SonarLint circa 2020)
 * Code has comments
-* Code has tests
+* Code has tests with 100% line coverage
 
 ## Install and Build
 First, make sure you have the java compiler (javac) installed.
